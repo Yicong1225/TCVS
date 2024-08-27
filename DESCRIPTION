@@ -1,0 +1,34 @@
+Package: TCVS
+Type: Package
+Title: Tree-guided compositional variable selection analysis of microbiome data
+Version: 1.0
+Date: 2024-8-27
+Depends: 
+    R (>= 4.3.1)
+Imports:
+    CVXR,
+    knockoff,
+    MASS,
+    GUniFrac,
+    cluster,
+    dirmult
+Suggests: knitr
+VignetteBuilder: knitr
+Authors@R: c(person("Yicong", "Mao", role = c("aut", "cre"),
+                     email = "ycmao@hsc.pku.edu.cn"),
+              person("Zhiwen", "Jiang", role = "aut"),
+              person("Tianying", "Wang", role = "aut"),
+              person("Yi-Juan", "Hu", role = "aut"),
+              person("Xiang", "Zhan", role = "aut"))
+Author: Yicong Mao [aut, cre],
+        Zhiwen Jiang [aut],
+        Tianying Wang[aut],
+        Yi-Juan Hu[aut],
+        Xiang Zhan[aut]
+Maintainer: Yicong Mao <ycmao@hsc.pku.edu.cn>
+Description: The TCVS package implements the Tree-guided Compositional Variable Selection method to identify outcome-associated components within high-dimensional microbial compositional data. This method enhances variable selection in microbiome data by incorporating auxiliary knockoff copies of microbiome features, treated as noise, and leveraging tree structure. It integrates hierarchical taxonomic tree information inherent to microbial taxa, refining the selection process. Furthermore, TCVS employs auxiliary knockoff copies of microbiome features to fine-tune the algorithm, achieving more precise outcomes. This approach is crucial for improving selection accuracy and proves advantageous, especially when the signal strength exceeds minimal thresholds.
+License: GPL (>= 3)
+Encoding: UTF-8
+NeedsCompilation: no
+RoxygenNote: 7.3.2
+LazyData: true

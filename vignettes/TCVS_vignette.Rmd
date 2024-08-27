@@ -1,0 +1,105 @@
+---
+title: "TCVS Package"
+author: "Yicong Mao, Zhiwen Jiang, Tianying Wang, Yi-Juan Hu, and Xiang Zhan"
+date: \today
+output: 
+  pdf_document:
+    citation_package: natbib
+bibliography: mytcvsref.bib
+csl: apa.csl
+vignette: >
+  %\VignetteIndexEntry{TCVS Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,   
+  results = 'markup', 
+  warning = FALSE,
+  message = FALSE 
+)
+```
+
+## 1. Overview  <!-- Introduction of the functions in the paackage-->
+
+The TCVS package implements the Tree-guided Compositional Variable Selection method (XXX) to identify outcome-associated components within high-dimensional microbial compositional data. It accommodates compositional covariates (e.g., relative abundances of taxa). This method enhances variable selection by incorporating auxiliary knockoff copies of microbiome features, which are treated as noise, and utilizing hierarchical tree structures inherent to microbial taxa. By integrating these elements, TCVS refines the selection process to achieve more precise outcomes. This approach is particularly effective in enhancing selection accuracy, proving advantageous when the signal strength surpasses minimal thresholds. This dual strategy of leveraging tree structure and augmenting with knockoff features enables TCVS to provide robust insights into the complex interactions within microbiome data.
+
+The core function of the TCVS package is **TCVS**, which is designed to identify OTUs (operational taxonomic units) associated with disease outcomes by performing statistical variable selection within a augmented regression model.
+The function **Group.lasso** computes the penalty term in the augmented problem incorporating auxiliary knockoff copies and tree structure with L2 norm (without square) for a given set of coefficients, groups, and a regularization parameter; 
+The function **get.all.knockoff** generates model-X knockoff copies [@candes18] for the covariates;
+The function **BIC_TCVS** calculates the Bayesian Information Criterion (BIC) for a given set of parameters using the CVXR package;
+The function **cvxr.result** performs an optimization to solve the augmented regression problem using the CVXR package.
+
+Download the latest version of the package from GitHub at (XXX) to a local hard drive and install and load the package:
+```{r download and load}
+#install.packages("TCVS_1.0.tar.gz", repos=NULL)
+#devtools::install()
+library(TCVS)
+```
+
+##  2. Examples
+### 2.1 Generate the simulated data
+We begin by loading the taxonomic tree structure (matrix form) for calculating the penalty term in the augmented problem. 
+
+```{r load-data}
+library(CVXR)
+library(knockoff)
+library(MASS)
+library(vegan)
+library(GUniFrac)
+library(cluster)
+library(dirmult)
+data(P_60, package = "TCVS")
+dim(P)
+data(throat.tree, package = "GUniFrac")
+data(throat.otu.tab, package = "GUniFrac")
+data(DirMultOutput)
+```
+
+We then generated a count data matrix 
+$\mathbf{W} = (w_{ij}) \in \mathbb{R}^{n\times p}$ from a Dirichlet-Multinomial distribution, whose parameters were estimated from counts of 856 taxa in an upper-respiratory-tract microbiome dataset \citep{charlson10,chen12}.
+To adjust for zero counts before CLR transformation, we added a pseudo-count of 0.5 to all counts before normalizing the count data matrix $\mathbf{W}$ into the compositional covariate matrix $\mathbf{X} \in\mathbb{R}^{n\times p}$ via  $x_{ij}=w_{ij}/\sum_{l=1}^pw_{il}$.
+```{r generate_data}
+n = 200
+p = 60
+setting = 1
+fdr.normial = 0.05
+method = "BIC"
+loop_start_index = 1
+seed = 2023
+type = "Dirmult" # type to generate compositional data
+normalizeMethod = "Rowsum"
+beta.slack.factor = NULL
+pseudocount = 0.5
+maxlam = 0.1
+minlam = 1e-7
+nlam = 20
+X <- get.all.OTU(n, p, trans = 0, type, normalizeMethod, pseudocount, seed = seed)
+# clr transformation
+Z <- get.all.OTU(n, p, trans = 2, type, normalizeMethod, pseudocount, seed = seed) 
+y <- get.all.y(Z, setting = setting, beta.slack.factor, seed = seed)
+dim(Z)
+```
+
+### 2.2 Perform the variable selection procedure
+The core function that implemented the TCVS method is **TCVS**. We can use the TCVS function to select outcome-associated compositional components. The **X** (e.g., the OTU compositional matrix) should have rows corresponding to samples and columns corresponding to OTUs. The first 2p rows of the matrix **P** correspond to the $l_1$ penalty applied to the CLR (Centered Log-Ratio) covariates followed by their knockoff copies. The remaining rows correspond to the tree structure associated with the CLR covariates and their knockoff copies, following the same order of covariates first and knockoff copies second.
+```{r variable selection}
+result.TCVS <- TCVS(
+  X = X,
+  Z = Z,
+  y = y,
+  P = P,
+  method = method,
+  maxlam,
+  minlam,
+  nlam,
+  fdr = fdr.normial,
+  seed = seed
+)
+selected.OTU = which(result.TCVS$S.TCVS!=0)
+selected.OTU # selected OTUs using TCVS
+```
+
+
