@@ -32,16 +32,15 @@ The function **get.all.knockoff** generates model-X knockoff copies [@candes18] 
 The function **BIC_TCVS** calculates the Bayesian Information Criterion (BIC) for a given set of parameters using the CVXR package;
 The function **cvxr.result** performs an optimization to solve the augmented regression problem using the CVXR package.
 
-Download the latest version of the package from GitHub at (XXX) to a local hard drive and install and load the package:
+Download the latest version of the package from GitHub at (\url{https://github.com/Yicong1225/TCVS}) to a local hard drive and install and load the package:
 ```{r download and load}
-#install.packages("TCVS_1.0.tar.gz", repos=NULL)
-#devtools::install()
+install.packages("TCVS_1.0.tar.gz", repos=NULL)
 library(TCVS)
 ```
 
 ##  2. Examples
 ### 2.1 Generate the simulated data
-We begin by loading the taxonomic tree structure (matrix form) for calculating the penalty term in the augmented problem. 
+We begin by loading the taxonomic tree structure (matrix form) for calculating the penalty term in the augmented problem. The first 2p rows of the taxonomic tree matrix **P** correspond to the $l_1$ penalty applied to the CLR (Centered Log-Ratio) covariates followed by their knockoff copies. The remaining rows correspond to the tree structure associated with the CLR covariates and their knockoff copies, following the same order of covariates first and knockoff copies second.
 
 ```{r load-data}
 library(CVXR)
@@ -84,7 +83,7 @@ dim(Z)
 ```
 
 ### 2.2 Perform the variable selection procedure
-The core function that implemented the TCVS method is **TCVS**. We can use the TCVS function to select outcome-associated compositional components. The **X** (e.g., the OTU compositional matrix) should have rows corresponding to samples and columns corresponding to OTUs. The first 2p rows of the matrix **P** correspond to the $l_1$ penalty applied to the CLR (Centered Log-Ratio) covariates followed by their knockoff copies. The remaining rows correspond to the tree structure associated with the CLR covariates and their knockoff copies, following the same order of covariates first and knockoff copies second.
+The core function that implemented the TCVS method is **TCVS**. We can use the TCVS function to select outcome-associated compositional components. The **X** (e.g., the OTU compositional matrix) should have rows corresponding to samples and columns corresponding to OTUs. 
 ```{r variable selection}
 result.TCVS <- TCVS(
   X = X,
