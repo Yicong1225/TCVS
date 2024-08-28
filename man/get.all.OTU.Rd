@@ -37,3 +37,15 @@ The generated OTU matrix.
 \description{
 This function generates the OTU matrix.
 }
+\examples{
+# Example usage
+library(GUniFrac)
+n = 200
+p = 60
+loop_start_index = 1
+seed = 2023
+type = "Dirmult" # type to generate compositional data
+normalizeMethod = "Rowsum"
+pseudocount = 0.5
+X <- get.all.OTU(n, p, trans = 0, type, normalizeMethod, pseudocount, seed = seed)
+}

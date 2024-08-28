@@ -15,5 +15,5 @@ get.all.knockoff(Z, seed = 2023)
 The knockoff copy matrix.
 }
 \description{
-This function generates the knockoff copy matrix.
+This function generates the knockoff copies using a function from knockoff.
 }

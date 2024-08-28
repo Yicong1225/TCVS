@@ -4,7 +4,7 @@
 \alias{TCVS}
 \title{A Tree-guided Compositional Variable Selection method (TCVS)}
 \usage{
-TCVS(X, Z, y, P, method = "BIC", maxlam, minlam, nlam, fdr = 0.05, seed = 2023)
+TCVS(X, Z, y, P, method = "BIC", maxlam, minlam, nlam, q = 0.05, seed = 2023)
 }
 \arguments{
 \item{X}{the compositional covariate matrix.}
@@ -23,7 +23,7 @@ TCVS(X, Z, y, P, method = "BIC", maxlam, minlam, nlam, fdr = 0.05, seed = 2023)
 
 \item{nlam}{the number of lambda value candidates.}
 
-\item{fdr}{the nominal FDR level. The default is 0.05.}
+\item{q}{A threshold value between 0 and 1. The default is 0.05.}
 
 \item{seed}{an integer value used to set the seed of the random number generator for ensuring reproducibility.
 The default is 2023.}
@@ -39,4 +39,39 @@ A list containing the following elements:
 This function allows you to
 identify outcome-associated components (OTUs) within high-dimensional microbial compositional data with
 hierarchical taxonomic tree information inherent among microbial taxa.
+}
+\examples{
+# Example usage
+library(GUniFrac)
+n = 200
+p = 60
+sim.setting = 1
+method = "BIC"
+seed = 2023
+type = "Dirmult" # type to generate compositional data
+normalizeMethod = "Rowsum"
+beta.slack.factor = NULL
+pseudocount = 0.5
+maxlam = 0.1
+minlam = 1e-7
+nlam = 2
+q = 0.05
+data(P_60, package = "TCVS") # P matrix
+X <- get.all.OTU(n, p, trans = 0, type, normalizeMethod, pseudocount, seed = seed)
+# clr transformation
+Z <- get.all.OTU(n, p, trans = 2, type, normalizeMethod, pseudocount, seed = seed)
+y <- get.all.y(Z, setting = sim.setting, beta.slack.factor, seed = seed)
+result.TCVS <- TCVS(
+  X = X,
+  Z = Z,
+  y = y,
+  P = P,
+  method = method,
+  maxlam = maxlam,
+  minlam = minlam,
+  nlam = nlam,
+  q = q,
+  seed = seed
+)
+
 }

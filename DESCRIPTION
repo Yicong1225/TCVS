@@ -4,11 +4,10 @@ Title: Tree-guided compositional variable selection analysis of microbiome data
 Version: 1.0
 Date: 2024-8-27
 Depends: 
-    R (>= 4.3.1)
+    R (>= 4.3.0)
 Imports:
     CVXR,
     knockoff,
-    MASS,
     GUniFrac,
     cluster,
     dirmult

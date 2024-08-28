@@ -12,7 +12,7 @@
 #' @param maxlam the maximum lambda value for the tuning parameter lambda candidates.
 #' @param minlam the minimum lambda value for the tuning parameter lambda candidates.
 #' @param nlam the number of lambda value candidates.
-#' @param fdr the nominal FDR level. The default is 0.05.
+#' @param q A threshold value between 0 and 1. The default is 0.05.
 #' @param seed an integer value used to set the seed of the random number generator for ensuring reproducibility.
 #' The default is 2023.
 #'
@@ -24,13 +24,11 @@
 #'
 #' @examples
 #' # Example usage
-#' \dontrun{
+#'library(GUniFrac)
 #' n = 200
 #' p = 60
 #' sim.setting = 1
-#' fdr.normial = 0.05
 #' method = "BIC"
-#' loop_start_index = 1
 #' seed = 2023
 #' type = "Dirmult" # type to generate compositional data
 #' normalizeMethod = "Rowsum"
@@ -38,7 +36,9 @@
 #' pseudocount = 0.5
 #' maxlam = 0.1
 #' minlam = 1e-7
-#' nlam = 2
+#' nlam = 20
+#' q = 0.05
+#' data(P_60, package = "TCVS") # P matrix
 #' X <- get.all.OTU(n, p, trans = 0, type, normalizeMethod, pseudocount, seed = seed)
 #' # clr transformation
 #' Z <- get.all.OTU(n, p, trans = 2, type, normalizeMethod, pseudocount, seed = seed)
@@ -52,7 +52,7 @@
 #'   maxlam = maxlam,
 #'   minlam = minlam,
 #'   nlam = nlam,
-#'   fdr,
+#'   q = q,
 #'   seed = seed
 #' )
 #'
@@ -64,7 +64,7 @@ TCVS <- function(X,Z,y,
                  maxlam,
                  minlam,
                  nlam,
-                 fdr = 0.05,
+                 q = 0.05,
                  seed = 2023) {
    set.seed(seed)
    Result <- list()
@@ -129,7 +129,7 @@ TCVS <- function(X,Z,y,
       W_TCVS[1, j] <- abs(tmp2[j]) - abs(tmp2[j + p])
     }
 
-    threshold.TCVS[1] <- knockoff.threshold(W = W_TCVS[1, ], fdr = fdr, offset = 0)
+    threshold.TCVS[1] <- knockoff.threshold(W = W_TCVS[1, ], fdr = q, offset = 0)
     S.TCVS[1, which(W_TCVS[1, ] >= threshold.TCVS[1])] <- 1
 
     # save variables
@@ -187,8 +187,8 @@ TCVS_Generate_X_Z <- function(
     k <- 4 ## 4 time pts within each subject
     n <- m * k ## total sample size
     data(throat.tree,package = "GUniFrac")
-    data(throat.otu.tab)
-    data(DirMultOutput)
+    data(throat.otu.tab,package = "GUniFrac")
+    data(DirMultOutput,package = "TCVS")
     nClus <- 20
     depth <- 10000
     tree <- throat.tree # tree = midpoint(tree)
@@ -244,6 +244,17 @@ TCVS_Generate_X_Z <- function(
 #' @param seed an integer value used to set the seed of the random number generator for ensuring reproducibility.
 #' The default is 2023.
 #' @return The generated OTU matrix.
+#' @examples
+#' # Example usage
+#'library(GUniFrac)
+#' n = 200
+#' p = 60
+#' loop_start_index = 1
+#' seed = 2023
+#' type = "Dirmult" # type to generate compositional data
+#' normalizeMethod = "Rowsum"
+#' pseudocount = 0.5
+#' X <- get.all.OTU(n, p, trans = 0, type, normalizeMethod, pseudocount, seed = seed)
 #' @export
 get.all.OTU <- function(
     n,
@@ -372,7 +383,7 @@ get.all.y <- function(Z, setting = c(1, 2), beta.slack.factor = 1, seed = 2023) 
 
 #' Generate Knockoff Copy Matrix
 #'
-#' This function generates the knockoff copy matrix.
+#' This function generates the knockoff copies using a function from knockoff.
 #'
 #' @param Z the original matrix.
 #' @param seed the seed for random number generation. The default is 2023.
@@ -510,40 +521,8 @@ BIC_TCVS <- function(Z, Y, p, group, maxlam, minlam, nlam, lambda_seq, A0, CoefN
   ))
 }
 
-## simulation of multi-normal
-#' @importFrom MASS mvrnorm
-simunorm=function(Sigma,n,p){
-  out=mvrnorm(n, rep(0,p), Sigma, tol = 1e-6)
-  return(out)
-}
-
-### transfer distance matrix to kernel matrix
-D2K = function(D){
-  n = NROW(D)
-  centerM = diag(n ) - 1/n
-  K = -0.5*centerM %*% (D*D) %*% centerM
-  eK= eigen(K, symmetric = T)
-  K = eK$vector %*% diag(abs(eK$values)) %*% t(eK$vector)
-  return(K)
-}
 
 
-#' @name P
-#' @title Taxonomy Structure of OTUs
-#' @description The taxonomy structure of OTUs.
-#' @docType data
-#' @usage data(P_60)
-#' @format An object of class `matrix`.
-#' @keywords datasets
-NULL
 
-#' @name dd
-#' @title Example Data Set
-#' @description An example data set.
-#' @docType data
-#' @usage data(DirMultOutput)
-#' @format An object of class `list`.
-#' @keywords datasets
-NULL
 
 

@@ -1,11 +1,9 @@
 library(CVXR)
 library(knockoff)
-library(MASS)
-library(vegan)
 library(GUniFrac)
 library(cluster)
 library(dirmult)
-devtools::install()
+install.packages("TCVS_1.0.tar.gz", repos = NULL)
 library(TCVS)
 data(P_60, package = "TCVS")
 dim(P)
@@ -13,12 +11,11 @@ data(throat.tree, package = "GUniFrac")
 data(throat.otu.tab, package = "GUniFrac")
 data(DirMultOutput, package = "TCVS")
 
-
 #### variable settings ####
 n = 200
 p = 60
 setting = 1
-fdr.normial = 0.05
+q = 0.05
 method = "BIC"
 loop_start_index = 1
 seed = 2023
@@ -45,7 +42,7 @@ result.TCVS <- TCVS(
   maxlam,
   minlam,
   nlam,
-  fdr = fdr.normial,
+  q = q,
   seed = seed
 )
 selected.OTU = which(result.TCVS$S.TCVS!=0)
